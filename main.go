@@ -33,7 +33,10 @@ func main() {
 	}
 
 	// So client makes HTTP/2 requests
-	http2.ConfigureTransport(tr)
+	err := http2.ConfigureTransport(tr)
+	if err != nil {
+		return
+	}
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:     aws.String("us-east-2"),
@@ -65,11 +68,6 @@ func main() {
 		}
 		n++
 	}
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
 }
 
 func insertOrder(writer *timestreamwrite.TimestreamWrite, order Order) error {
@@ -98,7 +96,7 @@ func insertOrder(writer *timestreamwrite.TimestreamWrite, order Order) error {
 }
 
 func buildDimensions(orderId string) []*timestreamwrite.Dimension {
-	dimensions := []*timestreamwrite.Dimension{}
+	var dimensions []*timestreamwrite.Dimension
 	dimensions = append(dimensions, &timestreamwrite.Dimension{
 		Name:  aws.String("OrderId"),
 		Value: aws.String(orderId),
